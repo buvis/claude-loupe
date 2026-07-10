@@ -1,0 +1,4 @@
+{
+  "description": "loupe code-quality hooks - the engine foundation ships first; hook entry points register here in a later phase",
+  "hooks": {}
+}
