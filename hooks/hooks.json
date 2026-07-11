@@ -1,4 +1,51 @@
 {
-  "description": "loupe code-quality hooks - the engine foundation ships first; hook entry points register here in a later phase",
-  "hooks": {}
+  "description": "loupe code-quality hooks: session bootstrap, pre-write secrets block, per-edit ast-grep + fast-linter analysis, and end-of-turn autofix/format, slow lint, and tool nudges",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/session_start.py",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/scan_secrets.py",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/analyze.py",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/agent_end.py",
+            "timeout": 300
+          }
+        ]
+      }
+    ]
+  }
 }

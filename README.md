@@ -4,9 +4,9 @@
 
 > A loupe is the jeweler's lens: held right against the work, merciless about flaws.
 
-Code-quality feedback for [Claude Code](https://claude.ai/code) edits. When complete, loupe blocks secret leaks, stub bodies, and security violations before they land, runs ast-grep rules and fast linters on every `Write`/`Edit`, defers autofix, formatting, and slow linters to end of turn, and nudges once per project when a needed tool is missing.
+Code-quality feedback for [Claude Code](https://claude.ai/code) edits. Loupe blocks secret leaks, stub bodies, and security violations before they land, runs ast-grep rules and fast linters on every `Write`/`Edit`, defers autofix, formatting, and slow linters (clippy, svelte-check) to end of turn, and nudges once per project when a needed tool is missing.
 
-**Status: pre-release.** This repo currently ships the engine foundation. The plugin installs cleanly but registers no hooks yet; hook entry points, the ast-grep rule pack, and the `/loupe-report` and `/loupe-toggle` commands land in later phases.
+**Status: pre-release.** The engine, the ast-grep rule pack, the four hook entry points (`SessionStart`, pre-write secrets guard, per-edit analysis, `Stop` fix/format), and the `/loupe-report` and `/loupe-toggle` commands are in place; marketplace publication and the dogfood sign-off land with the v1 release.
 
 ## What's inside
 
