@@ -122,5 +122,35 @@ class MalformedStateTests(HomeIsolatedTestCase):
         self.assertEqual(loaded["version"], state_mod.STATE_VERSION)
 
 
+class NudgeReportedTests(HomeIsolatedTestCase):
+    """The delivered-nudge marker: lets each nudge print once per project."""
+
+    def test_default_persistent_carries_an_empty_reported_log(self) -> None:
+        self.assertEqual(state_mod.default_persistent()["nudge_reported"], [])
+
+    def test_reported_log_survives_a_session_cycle(self) -> None:
+        state = state_mod.default_state()
+        state["persistent"]["nudged"] = ["ruff"]
+        state["persistent"]["nudge_reported"] = ["ruff"]
+        state_mod.save_state(PROJECT, state)
+
+        restarted = state_mod.reset_runtime(state_mod.load_state(PROJECT))
+        state_mod.save_state(PROJECT, restarted)
+
+        final = state_mod.load_state(PROJECT)
+        self.assertEqual(final["persistent"]["nudge_reported"], ["ruff"])
+
+    def test_wrong_typed_reported_log_rebuilds_empty(self) -> None:
+        path = state_mod.state_path(PROJECT)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            json.dumps({"persistent": {"nudged": ["ruff"], "nudge_reported": 7}}),
+            encoding="utf-8",
+        )
+        loaded = state_mod.load_state(PROJECT)
+        self.assertEqual(loaded["persistent"]["nudge_reported"], [])
+        self.assertEqual(loaded["persistent"]["nudged"], ["ruff"])
+
+
 if __name__ == "__main__":
     unittest.main()

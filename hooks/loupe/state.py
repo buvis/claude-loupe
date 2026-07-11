@@ -2,8 +2,10 @@
 
 State lives at ``~/.claude/loupe/state/<project-hash>.json``. The runtime
 block (format queue, session findings) is per-session scratch and resets
-at session start; the persistent block (nudge log) survives across
-sessions. Loading never raises on bad content: missing files, non-JSON,
+at session start; the persistent block survives across sessions: the
+nudge log (``nudged`` guards re-recording, ``nudge_reported`` marks which
+nudges the Stop summary has already delivered, so each prints exactly
+once per project). Loading never raises on bad content: missing files, non-JSON,
 non-dict JSON, and wrong-typed blocks or fields all rebuild from the
 defaults, field by field.
 
@@ -26,7 +28,7 @@ def default_runtime() -> dict:
 
 def default_persistent() -> dict:
     """Fresh persistent block: survives across sessions."""
-    return {"nudged": []}
+    return {"nudged": [], "nudge_reported": []}
 
 
 def default_state() -> dict:
