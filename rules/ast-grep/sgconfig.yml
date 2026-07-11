@@ -1,0 +1,7 @@
+# loupe ast-grep rule pack registration; ruleDirs resolve relative to
+# this file. astgrep.run_astgrep points `ast-grep scan --config` here.
+ruleDirs:
+  - python
+  - javascript
+  - typescript
+  - rust

@@ -1,0 +1,127 @@
+# loupe TypeScript rule pack: twins of ../javascript/rules.yml, because
+# an ast-grep rule binds to exactly one grammar and `.ts` files parse
+# with the typescript grammar. Keep in sync with the javascript pack.
+# Known gap: .tsx needs the tsx grammar and is not covered in v1.
+id: stub-ts-not-implemented
+language: typescript
+severity: error
+message: Function body only throws a not-implemented/TODO error (stub)
+rule:
+  any:
+    - pattern: function $NAME($$$PARAMS) { throw new Error($MSG) }
+    - pattern: 'function $NAME($$$PARAMS): $RET { throw new Error($MSG) }'
+    - pattern: ($$$PARAMS) => { throw new Error($MSG) }
+    - pattern: '($$$PARAMS): $RET => { throw new Error($MSG) }'
+    - pattern:
+        context: 'class C { $NAME($$$PARAMS) { throw new Error($MSG) } }'
+        selector: method_definition
+    - pattern:
+        context: 'class C { $NAME($$$PARAMS): $RET { throw new Error($MSG) } }'
+        selector: method_definition
+constraints:
+  MSG:
+    regex: (?i)not.{0,3}implemented|todo|stub
+---
+id: stub-ts-empty-catch
+language: typescript
+severity: error
+message: Catch clause swallows the exception with an empty block
+rule:
+  any:
+    - pattern:
+        context: 'try {} catch ($ERR) {}'
+        selector: catch_clause
+    - pattern:
+        context: 'try {} catch {}'
+        selector: catch_clause
+---
+id: security-ts-eval
+language: typescript
+severity: error
+message: eval on a dynamic string executes arbitrary code
+rule:
+  any:
+    - pattern: eval($ARG)
+constraints:
+  ARG:
+    not:
+      kind: string
+---
+id: security-ts-child-process-exec
+language: typescript
+severity: error
+message: child_process exec with a dynamic command string enables shell injection
+rule:
+  any:
+    - pattern: exec($CMD)
+    - pattern: exec($CMD, $$$REST)
+    - pattern: execSync($CMD)
+    - pattern: execSync($CMD, $$$REST)
+    - pattern: child_process.exec($CMD)
+    - pattern: child_process.exec($CMD, $$$REST)
+    - pattern: child_process.execSync($CMD)
+    - pattern: child_process.execSync($CMD, $$$REST)
+constraints:
+  CMD:
+    not:
+      kind: string
+---
+id: security-ts-spawn-shell
+language: typescript
+severity: error
+message: 'spawn/execFile with `shell: true` enables shell injection'
+rule:
+  kind: call_expression
+  all:
+    - has:
+        field: function
+        any:
+          - pattern: spawn
+          - pattern: spawnSync
+          - pattern: execFile
+          - pattern: execFileSync
+          - pattern: child_process.spawn
+          - pattern: child_process.spawnSync
+          - pattern: child_process.execFile
+          - pattern: child_process.execFileSync
+    - has:
+        field: arguments
+        has:
+          stopBy: end
+          pattern:
+            context: 'f({shell: true})'
+            selector: pair
+---
+id: security-ts-inner-html
+language: typescript
+severity: error
+message: innerHTML assignment with dynamic content enables XSS
+rule:
+  pattern: $EL.innerHTML = $VAL
+constraints:
+  VAL:
+    not:
+      kind: string
+---
+id: correctness-ts-eq-nan
+language: typescript
+severity: warning
+message: Comparing against NaN is always false; use Number.isNaN
+rule:
+  any:
+    - pattern: $X == NaN
+    - pattern: NaN == $X
+    - pattern: $X != NaN
+    - pattern: NaN != $X
+    - pattern: $X === NaN
+    - pattern: NaN === $X
+    - pattern: $X !== NaN
+    - pattern: NaN !== $X
+    - pattern: $X == Number.NaN
+    - pattern: Number.NaN == $X
+    - pattern: $X != Number.NaN
+    - pattern: Number.NaN != $X
+    - pattern: $X === Number.NaN
+    - pattern: Number.NaN === $X
+    - pattern: $X !== Number.NaN
+    - pattern: Number.NaN !== $X

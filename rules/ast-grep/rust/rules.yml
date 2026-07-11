@@ -1,0 +1,45 @@
+# loupe Rust rule pack (authored fresh; pi-lens shipped no Rust rules).
+id: stub-rust-todo
+language: rust
+severity: error
+message: todo!() marks an unimplemented body (stub implementation)
+rule:
+  any:
+    - pattern: todo!()
+    - pattern: todo!($$$ARGS)
+---
+id: stub-rust-unimplemented
+language: rust
+severity: error
+message: unimplemented!() marks an unimplemented body (stub implementation)
+rule:
+  any:
+    - pattern: unimplemented!()
+    - pattern: unimplemented!($$$ARGS)
+---
+id: security-rust-unsafe-block
+language: rust
+severity: error
+message: unsafe block bypasses the borrow checker's guarantees; justify or remove
+rule:
+  kind: unsafe_block
+---
+id: style-rust-unwrap
+language: rust
+severity: hint
+message: .unwrap() panics on Err/None; prefer ? or explicit handling outside tests
+rule:
+  all:
+    - pattern: $X.unwrap()
+    - not:
+        inside:
+          stopBy: end
+          kind: function_item
+          follows:
+            pattern: '#[test]'
+    - not:
+        inside:
+          stopBy: end
+          kind: mod_item
+          follows:
+            pattern: '#[cfg(test)]'

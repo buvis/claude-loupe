@@ -1,0 +1,120 @@
+# loupe JavaScript rule pack (authored for loupe; see CHANGELOG
+# provenance note). Twin rules for .ts files live in ../typescript.
+id: stub-js-not-implemented
+language: javascript
+severity: error
+message: Function body only throws a not-implemented/TODO error (stub)
+rule:
+  any:
+    - pattern: function $NAME($$$PARAMS) { throw new Error($MSG) }
+    - pattern: ($$$PARAMS) => { throw new Error($MSG) }
+    - pattern:
+        context: 'class C { $NAME($$$PARAMS) { throw new Error($MSG) } }'
+        selector: method_definition
+constraints:
+  MSG:
+    regex: (?i)not.{0,3}implemented|todo|stub
+---
+id: stub-js-empty-catch
+language: javascript
+severity: error
+message: Catch clause swallows the exception with an empty block
+rule:
+  any:
+    - pattern:
+        context: 'try {} catch ($ERR) {}'
+        selector: catch_clause
+    - pattern:
+        context: 'try {} catch {}'
+        selector: catch_clause
+---
+id: security-js-eval
+language: javascript
+severity: error
+message: eval on a dynamic string executes arbitrary code
+rule:
+  any:
+    - pattern: eval($ARG)
+constraints:
+  ARG:
+    not:
+      kind: string
+---
+id: security-js-child-process-exec
+language: javascript
+severity: error
+message: child_process exec with a dynamic command string enables shell injection
+rule:
+  any:
+    - pattern: exec($CMD)
+    - pattern: exec($CMD, $$$REST)
+    - pattern: execSync($CMD)
+    - pattern: execSync($CMD, $$$REST)
+    - pattern: child_process.exec($CMD)
+    - pattern: child_process.exec($CMD, $$$REST)
+    - pattern: child_process.execSync($CMD)
+    - pattern: child_process.execSync($CMD, $$$REST)
+constraints:
+  CMD:
+    not:
+      kind: string
+---
+id: security-js-spawn-shell
+language: javascript
+severity: error
+message: 'spawn/execFile with `shell: true` enables shell injection'
+rule:
+  kind: call_expression
+  all:
+    - has:
+        field: function
+        any:
+          - pattern: spawn
+          - pattern: spawnSync
+          - pattern: execFile
+          - pattern: execFileSync
+          - pattern: child_process.spawn
+          - pattern: child_process.spawnSync
+          - pattern: child_process.execFile
+          - pattern: child_process.execFileSync
+    - has:
+        field: arguments
+        has:
+          stopBy: end
+          pattern:
+            context: 'f({shell: true})'
+            selector: pair
+---
+id: security-js-inner-html
+language: javascript
+severity: error
+message: innerHTML assignment with dynamic content enables XSS
+rule:
+  pattern: $EL.innerHTML = $VAL
+constraints:
+  VAL:
+    not:
+      kind: string
+---
+id: correctness-js-eq-nan
+language: javascript
+severity: warning
+message: Comparing against NaN is always false; use Number.isNaN
+rule:
+  any:
+    - pattern: $X == NaN
+    - pattern: NaN == $X
+    - pattern: $X != NaN
+    - pattern: NaN != $X
+    - pattern: $X === NaN
+    - pattern: NaN === $X
+    - pattern: $X !== NaN
+    - pattern: NaN !== $X
+    - pattern: $X == Number.NaN
+    - pattern: Number.NaN == $X
+    - pattern: $X != Number.NaN
+    - pattern: Number.NaN != $X
+    - pattern: $X === Number.NaN
+    - pattern: Number.NaN === $X
+    - pattern: $X !== Number.NaN
+    - pattern: Number.NaN !== $X

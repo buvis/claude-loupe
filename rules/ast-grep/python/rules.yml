@@ -1,0 +1,162 @@
+# loupe Python rule pack (authored for loupe; see CHANGELOG provenance
+# note). Rule ids follow <category>-<language>-<slug>; astgrep.py derives
+# the finding category from the id prefix.
+id: stub-python-pass-only-body
+language: python
+severity: error
+message: Function body is only `pass` (stub implementation)
+rule:
+  all:
+    - pattern: |-
+        def $NAME($$$ARGS):
+            pass
+    - not:
+        inside:
+          kind: decorated_definition
+---
+id: stub-python-not-implemented
+language: python
+severity: error
+message: Function body only raises NotImplementedError (stub implementation)
+rule:
+  all:
+    - any:
+        - pattern: |-
+            def $NAME($$$ARGS):
+                raise NotImplementedError
+        - pattern: |-
+            def $NAME($$$ARGS):
+                raise NotImplementedError($$$MSG)
+    - not:
+        inside:
+          kind: decorated_definition
+---
+id: stub-python-empty-except
+language: python
+severity: error
+message: Except clause swallows the exception with a bare `pass`
+rule:
+  any:
+    - pattern:
+        context: |-
+          try:
+              pass
+          except:
+              pass
+        selector: except_clause
+    - pattern:
+        context: |-
+          try:
+              pass
+          except $EX:
+              pass
+        selector: except_clause
+    - pattern:
+        context: |-
+          try:
+              pass
+          except $EX as $ALIAS:
+              pass
+        selector: except_clause
+---
+id: security-python-eval-exec
+language: python
+severity: error
+message: eval/exec on a dynamic string executes arbitrary code
+rule:
+  any:
+    - pattern: eval($ARG)
+    - pattern: eval($ARG, $$$REST)
+    - pattern: exec($ARG)
+    - pattern: exec($ARG, $$$REST)
+constraints:
+  ARG:
+    not:
+      all:
+        - kind: string
+        - not:
+            has:
+              kind: interpolation
+---
+id: security-python-subprocess-shell
+language: python
+severity: error
+message: subprocess with shell=True enables shell injection
+rule:
+  any:
+    - all:
+        - kind: call
+        - has:
+            field: function
+            any:
+              - pattern: subprocess.run
+              - pattern: subprocess.Popen
+              - pattern: subprocess.call
+              - pattern: subprocess.check_call
+              - pattern: subprocess.check_output
+        - has:
+            field: arguments
+            has:
+              pattern:
+                context: f(shell=True)
+                selector: keyword_argument
+    - pattern: subprocess.getoutput($$$ARGS)
+    - pattern: subprocess.getstatusoutput($$$ARGS)
+---
+id: security-python-pickle-loads
+language: python
+severity: error
+message: pickle.loads on non-literal data deserializes untrusted input
+rule:
+  any:
+    - pattern: pickle.loads($ARG)
+    - pattern: pickle.loads($ARG, $$$REST)
+constraints:
+  ARG:
+    not:
+      kind: string
+---
+id: correctness-python-mutable-default-arg
+language: python
+severity: warning
+message: Mutable default argument is shared across calls
+rule:
+  any:
+    - pattern:
+        context: 'def f($ARG=[$$$ITEMS]): pass'
+        selector: default_parameter
+    - pattern:
+        context: 'def f($ARG={$$$ITEMS}): pass'
+        selector: default_parameter
+    - pattern:
+        context: 'def f($ARG=list()): pass'
+        selector: default_parameter
+    - pattern:
+        context: 'def f($ARG=dict()): pass'
+        selector: default_parameter
+    - pattern:
+        context: 'def f($ARG=set()): pass'
+        selector: default_parameter
+---
+id: correctness-python-eq-nan
+language: python
+severity: warning
+message: Comparing against NaN is always False; use math.isnan
+rule:
+  any:
+    - pattern: $X == math.nan
+    - pattern: math.nan == $X
+    - pattern: $X != math.nan
+    - pattern: math.nan != $X
+    - pattern: $X == np.nan
+    - pattern: np.nan == $X
+    - pattern: $X != np.nan
+    - pattern: np.nan != $X
+    - pattern: $X == float("nan")
+    - pattern: float("nan") == $X
+    - pattern: $X != float("nan")
+    - pattern: float("nan") != $X
+    - pattern: $X == float('nan')
+    - pattern: float('nan') == $X
+    - pattern: $X != float('nan')
+    - pattern: float('nan') != $X
