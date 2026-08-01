@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-08-02
+
 ### Added
 
 - **loupe**: read-coverage guarding, the two hook entry points PRD 00030 specified but v0.1.0 shipped without. `record_read.py` (`PostToolUse` on `Read`) merges each read's line range into per-session, per-file coverage, coalescing adjacent ranges so reads of 1-100 and 101-200 become one 1-200 span; `guard_edit.py` (`PreToolUse` on `Write|Edit|MultiEdit`) resolves an edit's target lines and reports the ones never read. New `read_guard` config key: `warn` (default, prints to stderr and allows), `block` (exit 2), `off`. The default is not `block` because the agent legitimately learns file contents through Grep output, subagent returns, and prior-session context, none of which pass through the `Read` hook. Markdown/text/log files, new-file creation, and unresolvable targets are exempt, and an unresolvable target never becomes a block
