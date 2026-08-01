@@ -1,5 +1,5 @@
 {
-  "description": "loupe code-quality hooks: session bootstrap, pre-write secrets block, per-edit ast-grep + fast-linter analysis, and end-of-turn autofix/format, slow lint, and tool nudges",
+  "description": "loupe code-quality hooks: session bootstrap, pre-write secrets block and read guard, read-range recording, per-edit ast-grep + fast-linter analysis, and end-of-turn autofix/format, slow lint, TDI, and tool nudges",
   "hooks": {
     "SessionStart": [
       {
@@ -20,6 +20,11 @@
             "type": "command",
             "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/scan_secrets.py",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/guard_edit.py",
+            "timeout": 10
           }
         ]
       }
@@ -32,6 +37,16 @@
             "type": "command",
             "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/analyze.py",
             "timeout": 30
+          }
+        ]
+      },
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/record_read.py",
+            "timeout": 10
           }
         ]
       }

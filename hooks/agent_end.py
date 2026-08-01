@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Stop entry point: deferred autofix/format, slow linters, tool nudges.
+"""Stop entry point: deferred autofix/format, slow linters, nudges, TDI.
 
 Drains the runtime format queue exactly once per turn: every queued
 file gets the safe autofixer plus the config-gated formatter, and each
@@ -7,13 +7,16 @@ queued language named in ``SLOW_LINTERS`` (clippy for Rust,
 svelte-check for Svelte - too slow for the per-edit budget) gets one
 advisory run. Missing-tool nudges recorded during the session print
 here, once per project ever, tracked in the persistent
-``nudge_reported`` log.
+``nudge_reported`` log. The turn's findings are banked into the
+Technical Debt Index history and their trend line printed.
 
-Idempotence: the state is saved with the queue cleared and the nudges
-marked as reported *before* the work runs, so a re-fired Stop finds
-nothing to claim and is a no-op. Always exits 0 - a nonzero exit from a
-Stop hook would force the agent to continue, which analysis feedback
-must never do. When there is nothing to report, nothing is printed.
+Idempotence: the state is saved with the queue cleared, the nudges
+marked as reported, and the TDI entry banked *before* the work runs, so
+a re-fired Stop finds nothing to claim and is a no-op - in particular it
+cannot double-count the turn's debt. Always exits 0 - a nonzero exit
+from a Stop hook would force the agent to continue, which analysis
+feedback must never do. When there is nothing to report, nothing is
+printed.
 """
 
 import os
@@ -54,20 +57,28 @@ def _finish_turn(cwd: str) -> None:
         for tool in state["persistent"]["nudged"]
         if tool not in state["persistent"]["nudge_reported"]
     ]
-    if not queue and not pending_nudges:
+    findings = state["runtime"]["findings"]
+    if not queue and not pending_nudges and not findings:
         return
 
     # Claim the work before doing it: a re-fired Stop sees an empty
-    # queue and fully reported nudges, making its run a no-op.
+    # queue, fully reported nudges, and no unbanked findings, making its
+    # run a no-op. The TDI entry is banked in the same claim, so a
+    # re-fire cannot double-count this turn's debt.
+    from loupe.tdi import update_tdi
+
     state = {
         **state,
-        "runtime": {**state["runtime"], "format_queue": []},
+        "runtime": {**state["runtime"], "format_queue": [], "findings": []},
         "persistent": {
             **state["persistent"],
             "nudge_reported": [
                 *state["persistent"]["nudge_reported"],
                 *pending_nudges,
             ],
+            "tdi_history": update_tdi(
+                state["persistent"]["tdi_history"], findings
+            ),
         },
     }
     save_state(project, state)
@@ -83,6 +94,15 @@ def _finish_turn(cwd: str) -> None:
         "its checks (this notice fires once per project)"
         for tool in pending_nudges
     )
+    if findings:
+        from loupe.tdi import trend
+
+        summary = trend(state["persistent"]["tdi_history"])
+        sections.append(
+            f"TDI: {summary['latest']} finding(s) this turn "
+            f"({summary['direction']} vs previous turn; "
+            f"{summary['lifetime']} lifetime over {summary['entries']} turn(s))"
+        )
     if sections:
         print("loupe stop summary:")
         print("\n".join(sections))

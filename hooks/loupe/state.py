@@ -22,13 +22,29 @@ STATE_VERSION = 1
 
 
 def default_runtime() -> dict:
-    """Fresh runtime block: per-session scratch."""
-    return {"format_queue": [], "findings": []}
+    """Fresh runtime block: per-session scratch.
+
+    ``read_ranges`` maps a file path to the merged line ranges the agent
+    has read this session; ``allow_edit`` lists paths a one-shot
+    ``/loupe-allow-edit`` override has exempted from the read guard. Both
+    are session-scoped on purpose: coverage earned in a previous session
+    is not coverage this one can claim.
+    """
+    return {
+        "format_queue": [],
+        "findings": [],
+        "read_ranges": {},
+        "allow_edit": [],
+    }
 
 
 def default_persistent() -> dict:
-    """Fresh persistent block: survives across sessions."""
-    return {"nudged": [], "nudge_reported": []}
+    """Fresh persistent block: survives across sessions.
+
+    ``tdi_history`` is the Technical Debt Index trend, one appended entry
+    per turn that produced findings.
+    """
+    return {"nudged": [], "nudge_reported": [], "tdi_history": []}
 
 
 def default_state() -> dict:

@@ -11,14 +11,24 @@ Known keys:
 - ``enabled`` (bool, default ``True``): master switch for all loupe hooks.
 - ``immediate_fix`` (bool, default ``False``): fix/format inline at edit
   time instead of deferring to Stop.
+- ``read_guard`` (str, default ``"warn"``): how to treat an edit whose
+  target lines were never read this session. ``warn`` prints to stderr and
+  allows, ``block`` exits 2, ``off`` skips the check. The default is
+  deliberately not ``block``: the agent legitimately learns a file's
+  contents through Grep output, subagent returns, and prior-session
+  context, none of which pass through the Read hook, so ``block``
+  false-positives on valid edits. Opt into it per project.
 """
 
 import json
 from pathlib import Path
 
+READ_GUARD_MODES = ("warn", "block", "off")
+
 DEFAULTS = {
     "enabled": True,
     "immediate_fix": False,
+    "read_guard": "warn",
 }
 
 
@@ -38,6 +48,8 @@ def load_config(root: str | Path | None = None) -> dict:
     for key, default in DEFAULTS.items():
         if not isinstance(merged.get(key), type(default)):
             merged[key] = default
+    if merged["read_guard"] not in READ_GUARD_MODES:
+        merged["read_guard"] = DEFAULTS["read_guard"]
     return merged
 
 

@@ -38,15 +38,39 @@ class ConfigTestCase(unittest.TestCase):
         path.write_text(content, encoding="utf-8")
 
 
+EXPECTED_DEFAULTS = {
+    "enabled": True,
+    "immediate_fix": False,
+    "read_guard": "warn",
+}
+
+
 class DefaultsTests(ConfigTestCase):
     def test_no_config_files_yields_defaults(self) -> None:
         loaded = config_mod.load_config(self.project)
-        self.assertEqual(loaded, {"enabled": True, "immediate_fix": False})
+        self.assertEqual(loaded, EXPECTED_DEFAULTS)
 
     def test_defaults_constant_is_not_mutated_by_loads(self) -> None:
         self._write_project(json.dumps({"enabled": False}))
         config_mod.load_config(self.project)
-        self.assertEqual(config_mod.DEFAULTS, {"enabled": True, "immediate_fix": False})
+        self.assertEqual(config_mod.DEFAULTS, EXPECTED_DEFAULTS)
+
+    def test_read_guard_defaults_to_warn_not_block(self) -> None:
+        """block false-positives on edits informed by Grep, subagents, or a
+        prior session, none of which pass through the Read hook."""
+        self.assertEqual(config_mod.load_config(self.project)["read_guard"], "warn")
+
+    def test_unknown_read_guard_mode_falls_back_to_warn(self) -> None:
+        self._write_project(json.dumps({"read_guard": "nonsense"}))
+        self.assertEqual(config_mod.load_config(self.project)["read_guard"], "warn")
+
+    def test_valid_read_guard_modes_survive(self) -> None:
+        for mode in config_mod.READ_GUARD_MODES:
+            with self.subTest(mode=mode):
+                self._write_project(json.dumps({"read_guard": mode}))
+                self.assertEqual(
+                    config_mod.load_config(self.project)["read_guard"], mode
+                )
 
 
 class MergePrecedenceTests(ConfigTestCase):
@@ -97,10 +121,7 @@ class MalformedConfigTests(ConfigTestCase):
 
     def test_missing_project_root_dir_yields_defaults(self) -> None:
         ghost = self.project / "does-not-exist"
-        self.assertEqual(
-            config_mod.load_config(ghost),
-            {"enabled": True, "immediate_fix": False},
-        )
+        self.assertEqual(config_mod.load_config(ghost), EXPECTED_DEFAULTS)
 
 
 if __name__ == "__main__":

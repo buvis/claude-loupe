@@ -6,7 +6,31 @@
 
 Code-quality feedback for [Claude Code](https://claude.ai/code) edits. Loupe blocks secret leaks, stub bodies, and security violations before they land, runs ast-grep rules and fast linters on every `Write`/`Edit`, defers autofix, formatting, and slow linters (clippy, svelte-check) to end of turn, and nudges once per project when a needed tool is missing.
 
-**Status: pre-release.** The engine, the ast-grep rule pack, the four hook entry points (`SessionStart`, pre-write secrets guard, per-edit analysis, `Stop` fix/format), and the `/loupe-report` and `/loupe-toggle` commands are in place; marketplace publication and the dogfood sign-off land with the v1 release.
+**Status: released.** All six hook entry points and all six commands are in place. The dogfood sign-off is still outstanding.
+
+## Hooks
+
+| Event | Script | What it does |
+|-------|--------|--------------|
+| `SessionStart` | `session_start.py` | resets the runtime block, caches the language and tool profile |
+| `PreToolUse` (`Write\|Edit\|MultiEdit`) | `scan_secrets.py` | exit 2 on a credential in the content about to land |
+| `PreToolUse` (`Write\|Edit\|MultiEdit`) | `guard_edit.py` | warns or blocks an edit to lines never read this session |
+| `PostToolUse` (`Read`) | `record_read.py` | records the read's line range for the guard above |
+| `PostToolUse` (`Write\|Edit\|MultiEdit`) | `analyze.py` | ast-grep pack plus fast linter; stubs and security findings block |
+| `Stop` | `agent_end.py` | autofix, format, slow linters, tool nudges, TDI bookkeeping |
+
+Every entry point fails open: malformed hook JSON, unknown fields, or an engine crash exits 0, so loupe can never break the session it watches.
+
+## Commands
+
+| Command | What it answers |
+|---------|-----------------|
+| `/loupe-report` | what has loupe found in this project |
+| `/loupe-check-health` | is loupe itself wired correctly (engine imports, entry points, rule pack, state) |
+| `/loupe-check-tools` | which linter, autofixer, and slow linter resolve for each language |
+| `/loupe-show-tdi` | how is the Technical Debt Index trending |
+| `/loupe-toggle` | turn loupe on or off for this project |
+| `/loupe-allow-edit <path>` | permit one edit the read guard would stop |
 
 ## What's inside
 
@@ -18,12 +42,22 @@ Code-quality feedback for [Claude Code](https://claude.ai/code) edits. Loupe blo
 | `hooks/loupe/languages.py` | language detection by file extension |
 | `hooks/loupe/tools.py` | tool resolution via PATH, mise shims, then `mise which`; nudge-once tracking for missing tools |
 | `hooks/loupe/findings.py` | the `Finding` record and the blocking (stub, security) vs advisory (correctness, style) split |
+| `hooks/loupe/readcoverage.py` | read line-range merge and coverage math behind the edit guard |
+| `hooks/loupe/tdi.py` | unweighted Technical Debt Index counts and their trend |
 
-State lives at `~/.claude/loupe/state/<project-hash>.json`. Config reads `~/.claude/loupe/config.json`, overridden per project by `.claude/loupe.json`. Keys: `enabled` (default `true`), `immediate_fix` (default `false`).
+State lives at `~/.claude/loupe/state/<project-hash>.json`. Config reads `~/.claude/loupe/config.json`, overridden per project by `.claude/loupe.json`.
+
+| Key | Default | Meaning |
+|-----|---------|---------|
+| `enabled` | `true` | master switch for every hook |
+| `immediate_fix` | `false` | fix and format inline instead of deferring to `Stop` |
+| `read_guard` | `"warn"` | `warn`, `block`, or `off` for edits to unread lines |
+
+`read_guard` defaults to `warn` rather than `block` on purpose: the agent legitimately learns a file's contents through Grep output, subagent returns, and prior-session context, none of which pass through the `Read` hook, so `block` false-positives on valid edits. Opt into it per project.
+
+`ast-grep` is the one tool worth installing: without it the entire rule pack is inert and no stub or security finding ever fires. Every other tool is optional and skipped silently with one nudge per project.
 
 ## Install
-
-Not yet published to the buvis-plugins marketplace; that happens with the v1 release. Once published:
 
 ```
 /plugin marketplace add buvis/claude-plugins

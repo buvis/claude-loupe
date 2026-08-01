@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **loupe**: read-coverage guarding, the two hook entry points PRD 00030 specified but v0.1.0 shipped without. `record_read.py` (`PostToolUse` on `Read`) merges each read's line range into per-session, per-file coverage, coalescing adjacent ranges so reads of 1-100 and 101-200 become one 1-200 span; `guard_edit.py` (`PreToolUse` on `Write|Edit|MultiEdit`) resolves an edit's target lines and reports the ones never read. New `read_guard` config key: `warn` (default, prints to stderr and allows), `block` (exit 2), `off`. The default is not `block` because the agent legitimately learns file contents through Grep output, subagent returns, and prior-session context, none of which pass through the `Read` hook. Markdown/text/log files, new-file creation, and unresolvable targets are exempt, and an unresolvable target never becomes a block
+- **loupe**: `/loupe-allow-edit <path>` grants a one-shot read-guard override that `guard_edit.py` consumes when it fires, so it can never silently become a permanent exemption; session-scoped, and a non-existent path is refused rather than recorded
+- **loupe**: Technical Debt Index. `loupe/tdi.py` counts a turn's findings by category, unweighted on purpose (raw counts trend honestly without weights nobody has data to tune), and `agent_end.py` banks one history entry per turn that produced findings, inside the same claim that clears the format queue so a re-fired `Stop` cannot double-count. History is capped at 500 entries, oldest dropped first
+- **loupe**: `/loupe-show-tdi` renders the trend: latest turn, direction against the previous turn, lifetime total, and a per-turn breakdown. An empty history reports that it cannot distinguish "nothing found yet" from "loupe never ran here" rather than implying zero debt
+- **loupe**: `/loupe-check-health` diagnoses loupe itself: every engine module imports, every entry point named in `hooks.json` exists on disk, the rule pack is present and `ast-grep` resolves, and state is readable and writable. Exits nonzero on any failure, so it can be trusted as a gate
+- **loupe**: `/loupe-check-tools` shows which fast linter, autofixer(s), and slow linter resolve per language, calling out `ast-grep` separately because the whole rule pack is inert without it
+
+### Fixed
+
+- **loupe**: the self-referencing marketplace description claimed "engine foundation only, no hooks registered yet", which stopped being true when the four original entry points went live
+
 ## [0.1.0] - 2026-08-02
 
 ### Added
