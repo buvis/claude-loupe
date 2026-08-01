@@ -1,6 +1,6 @@
 {
   "name": "loupe",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "description": "Code-quality feedback for Claude Code edits: pre-write secrets blocking, ast-grep and fast-linter analysis with blocking classification for stubs and security findings, deferred autofix/format and slow lint at Stop, and one-time tool nudges.",
   "author": {
     "name": "buvis"
