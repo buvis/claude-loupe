@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-08-02
+
 ### Changed
 
 - **loupe**: an empty `except`/`catch` is now advisory, not blocking. `stub-python-empty-except`, `stub-ts-empty-catch` and `stub-js-empty-catch` are renamed to `style-*` (the rule id carries the category) with severity `warning`. The 2026-08-02 dogfood scanned ten first-party repos and found 30 hits, every one deliberate best-effort cleanup - test teardown, best-effort logging, optional file removal - and not a single genuine stub. `stub-python-not-implemented`, `stub-rust-todo` and `stub-rust-unimplemented` stay blocking; they only ever fired on fixtures
