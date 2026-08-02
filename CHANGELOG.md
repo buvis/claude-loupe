@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **loupe**: an empty `except`/`catch` is now advisory, not blocking. `stub-python-empty-except`, `stub-ts-empty-catch` and `stub-js-empty-catch` are renamed to `style-*` (the rule id carries the category) with severity `warning`. The 2026-08-02 dogfood scanned ten first-party repos and found 30 hits, every one deliberate best-effort cleanup - test teardown, best-effort logging, optional file removal - and not a single genuine stub. `stub-python-not-implemented`, `stub-rust-todo` and `stub-rust-unimplemented` stay blocking; they only ever fired on fixtures
+
+### Fixed
+
+- **loupe**: `analyze.py` no longer reports "edit blocked". It runs on `PostToolUse`, where exit 2 cannot undo a write - Claude Code shows the stderr to the model and the edit stays. The heading now asks for a fix, and the README hook table and top-line summary say the same. The pre-write secrets guard does block, and still says so
+
 ## [0.2.0] - 2026-08-02
 
 ### Added

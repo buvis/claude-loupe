@@ -4,7 +4,10 @@
 Runs the packaged rule pack and the language's fast linter on the
 edited file and classifies the findings. Blocking findings (stub and
 security categories) exit 2 with a concise stderr naming file, rule,
-and line; advisory findings print inline and exit 0. Every analyzed
+and line. PostToolUse exit 2 cannot undo the write - the edit has
+landed and Claude Code feeds the stderr back to the model as
+must-fix feedback, so the message asks for a fix rather than
+claiming a block. Advisory findings print inline and exit 0. Every analyzed
 file is queued for the Stop-time autofix/format pass - unless
 ``immediate_fix`` is on and nothing blocks, in which case the fix and
 format run inline instead. Session findings accumulate in runtime
@@ -81,7 +84,7 @@ def _analyze(file_path: str, cwd: str) -> int:
     if fix_now:
         _fix_inline(file_path, language, config)
     if blocking:
-        _report(blocking, file_path, "edit blocked", sys.stderr)
+        _report(blocking, file_path, "fix before moving on", sys.stderr)
         return 2
     if advisory:
         _report(advisory, file_path, "advisory findings", sys.stdout)

@@ -4,9 +4,9 @@
 
 > A loupe is the jeweler's lens: held right against the work, merciless about flaws.
 
-Code-quality feedback for [Claude Code](https://claude.ai/code) edits. Loupe blocks secret leaks, stub bodies, and security violations before they land, runs ast-grep rules and fast linters on every `Write`/`Edit`, defers autofix, formatting, and slow linters (clippy, svelte-check) to end of turn, and nudges once per project when a needed tool is missing.
+Code-quality feedback for [Claude Code](https://claude.ai/code) edits. Loupe blocks secret leaks before they land, flags stub bodies and security violations as must-fix the moment they do, runs ast-grep rules and fast linters on every `Write`/`Edit`, defers autofix, formatting, and slow linters (clippy, svelte-check) to end of turn, and nudges once per project when a needed tool is missing.
 
-**Status: released.** All six hook entry points and all six commands are in place. The dogfood sign-off is still outstanding.
+**Status: released and dogfooded.** All six hook entry points and all six commands are in place. Measured 2026-08-02 over 60 real source files: `analyze.py` adds 47 ms p50 (budget was ~1s), the whole per-edit chain 82 ms.
 
 ## Hooks
 
@@ -16,7 +16,7 @@ Code-quality feedback for [Claude Code](https://claude.ai/code) edits. Loupe blo
 | `PreToolUse` (`Write\|Edit\|MultiEdit`) | `scan_secrets.py` | exit 2 on a credential in the content about to land |
 | `PreToolUse` (`Write\|Edit\|MultiEdit`) | `guard_edit.py` | warns or blocks an edit to lines never read this session |
 | `PostToolUse` (`Read`) | `record_read.py` | records the read's line range for the guard above |
-| `PostToolUse` (`Write\|Edit\|MultiEdit`) | `analyze.py` | ast-grep pack plus fast linter; stubs and security findings block |
+| `PostToolUse` (`Write\|Edit\|MultiEdit`) | `analyze.py` | ast-grep pack plus fast linter; stub and security findings come back as must-fix feedback (the edit itself has already landed) |
 | `Stop` | `agent_end.py` | autofix, format, slow linters, tool nudges, TDI bookkeeping |
 
 Every entry point fails open: malformed hook JSON, unknown fields, or an engine crash exits 0, so loupe can never break the session it watches.

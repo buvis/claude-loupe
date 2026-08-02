@@ -31,9 +31,9 @@ rule:
         inside:
           kind: decorated_definition
 ---
-id: stub-python-empty-except
+id: style-python-empty-except
 language: python
-severity: error
+severity: warning
 message: Except clause swallows the exception with a bare `pass`
 rule:
   any:

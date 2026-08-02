@@ -1,9 +1,15 @@
 """Finding record and the blocking vs advisory classification.
 
 Categories are closed: ``stub``, ``security``, ``correctness``, ``style``.
-Stub and security findings block the edit (exit 2 in the hook layer);
-correctness and style render as advisory feedback. Keeping the split here,
-next to the model, means every analysis module classifies identically.
+Stub and security findings are blocking - exit 2 in the hook layer, which
+stops a pre-write hook outright and returns must-fix feedback from a
+post-write one; correctness and style render as advisory. Keeping the split
+here, next to the model, means every analysis module classifies identically.
+
+A rule earns ``stub`` only when the pattern has no legitimate use. An empty
+``except``/``catch`` does not qualify: the 2026-08-02 dogfood found 30 of them
+in shipped first-party code, every one deliberate, so those rules live under
+``style``.
 """
 
 from dataclasses import dataclass

@@ -22,9 +22,9 @@ constraints:
   MSG:
     regex: (?i)not.{0,3}implemented|todo|stub
 ---
-id: stub-ts-empty-catch
+id: style-ts-empty-catch
 language: typescript
-severity: error
+severity: warning
 message: Catch clause swallows the exception with an empty block
 rule:
   any:

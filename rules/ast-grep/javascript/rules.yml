@@ -15,9 +15,9 @@ constraints:
   MSG:
     regex: (?i)not.{0,3}implemented|todo|stub
 ---
-id: stub-js-empty-catch
+id: style-js-empty-catch
 language: javascript
-severity: error
+severity: warning
 message: Catch clause swallows the exception with an empty block
 rule:
   any:

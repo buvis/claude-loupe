@@ -17,7 +17,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from loupe.astgrep import run_astgrep
-from loupe.findings import CATEGORIES
+from loupe.findings import CATEGORIES, classify
 from loupe.tools import resolve_tool
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -135,6 +135,33 @@ class RulePackBehaviorTests(unittest.TestCase):
                     self._fixture(rule_id, dir_name, "negative"), set()
                 )
                 self.assertNotIn(rule_id, fired)
+
+    def test_empty_except_and_catch_never_block_an_edit(self) -> None:
+        """Best-effort cleanup is advisory, not a stub.
+
+        The 2026-08-02 dogfood scan hit 30 deliberate empty handlers in
+        shipped first-party code and zero real stubs, so these three
+        rules carry the ``style`` category and can never exit 2.
+        """
+        ids = _rule_ids()
+        for rule_id in (
+            "style-python-empty-except",
+            "style-js-empty-catch",
+            "style-ts-empty-catch",
+        ):
+            with self.subTest(rule=rule_id):
+                dir_name = ids[rule_id]
+                fixture = self._fixture(rule_id, dir_name, "positive")
+                language = "python" if dir_name == "python" else "javascript"
+                fired = [
+                    finding
+                    for finding in run_astgrep(str(fixture), language, RULES_DIR)
+                    if finding.message.startswith(f"{rule_id}:")
+                ]
+                self.assertTrue(fired, f"{rule_id} did not fire on its fixture")
+                blocking, advisory = classify(fired)
+                self.assertEqual(blocking, [])
+                self.assertEqual(len(advisory), len(fired))
 
     def test_run_astgrep_end_to_end_with_the_packaged_pack(self) -> None:
         fixture = FIXTURES_DIR / "security-python-eval-exec" / "positive.py"
