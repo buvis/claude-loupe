@@ -68,6 +68,27 @@ class DispatchTests(LinterTestCase):
         self.assertEqual(findings, [])
         self.assertIs(state, self.state)
 
+    def test_ruff_command_honours_the_project_exclude(self) -> None:
+        """Ruff ignores exclude for a path named on the command line."""
+        capture = self.home / "argv.txt"
+        stub = self.bin_dir / "ruff"
+        stub.write_text(
+            f"#!{sys.executable}\n"
+            "import sys\n"
+            f"open({str(capture)!r}, 'w').write(chr(10).join(sys.argv[1:]))\n"
+            "sys.stdout.write('[]')\n",
+            encoding="utf-8",
+        )
+        os.chmod(stub, 0o755)
+        target = self._plant_target("app.py")
+
+        self._run(target, "python")
+
+        self.assertEqual(
+            capture.read_text(encoding="utf-8").splitlines(),
+            ["check", "--output-format=json", "--force-exclude", str(target)],
+        )
+
     def test_markdown_has_no_fast_linter(self) -> None:
         target = self._plant_target("notes.md")
         findings, state = self._run(target, "markdown")

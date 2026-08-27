@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **loupe**: ruff now runs with `--force-exclude`, so a project's `exclude` /
+  `extend-exclude` is honoured. Ruff deliberately ignores those settings for a
+  path named on the command line, and this hook always names one, so loupe was
+  reformatting and linting exactly the trees a project had excluded on purpose
+  - measured on a repo excluding `skills/`: 190 lines rewritten in one file
+  that `ruff format --force-exclude` reports as no Python file at all. Applies
+  to the `ruff check --fix` autofixer, `ruff format`, and the fast linter.
+  `black` keeps no equivalent: its `--force-exclude` takes a regex, not a flag
+
 ## [0.2.1] - 2026-08-02
 
 ### Changed

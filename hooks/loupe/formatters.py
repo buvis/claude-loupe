@@ -30,7 +30,10 @@ FORMAT_TIMEOUT_SECONDS = 30
 # Language -> candidate (tool, args-before-path) fixers; first
 # resolvable tool runs (Biome preferred over eslint, mirroring linters).
 AUTOFIXERS = {
-    "python": (("ruff", ("check", "--fix")),),
+    # --force-exclude: ruff ignores a project's exclude/extend-exclude for
+    # paths named on the command line, and this hook always names one. Without
+    # it, loupe rewrites the very trees a project excluded on purpose.
+    "python": (("ruff", ("check", "--fix", "--force-exclude")),),
     "javascript": (("biome", ("check", "--write")), ("eslint", ("--fix",))),
     "css": (("stylelint", ("--fix",)),),
     "sql": (("sqlfluff", ("fix",)),),
@@ -40,7 +43,9 @@ AUTOFIXERS = {
 _FORMATTER_COMMANDS = {
     "prettier": ("--write",),
     "biome": ("format", "--write"),
-    "ruff": ("format",),
+    "ruff": ("format", "--force-exclude"),
+    # black's --force-exclude takes a regex, not a bare flag, so it has no
+    # equivalent here; an excluded file still reaches black.
     "black": (),
     "rustfmt": (),
 }

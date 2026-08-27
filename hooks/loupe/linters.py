@@ -89,7 +89,16 @@ def _run(binary: str, name: str, path: str):
 
 
 _COMMANDS = {
-    "ruff": lambda binary, path: [binary, "check", "--output-format=json", path],
+    # --force-exclude for the same reason as in formatters.py: a path on the
+    # command line otherwise defeats the project's exclude, and findings in an
+    # excluded tree can block an edit the project never wanted linted.
+    "ruff": lambda binary, path: [
+        binary,
+        "check",
+        "--output-format=json",
+        "--force-exclude",
+        path,
+    ],
     "biome": lambda binary, path: [binary, "lint", "--reporter=github", path],
     "eslint": lambda binary, path: [binary, "--format", "json", path],
     "stylelint": lambda binary, path: [binary, "--formatter", "json", path],

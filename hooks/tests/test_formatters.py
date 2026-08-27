@@ -61,7 +61,7 @@ class FormatterTestCase(unittest.TestCase):
 
 
 class AutofixTests(FormatterTestCase):
-    def test_python_runs_ruff_check_fix(self) -> None:
+    def test_python_runs_ruff_check_fix_honouring_project_exclude(self) -> None:
         capture = self.home / "argv.txt"
         self._plant_tool("ruff", capture=capture)
         target = self._plant_target("app.py")
@@ -71,7 +71,11 @@ class AutofixTests(FormatterTestCase):
         self.assertEqual(result["tool"], "ruff")
         self.assertEqual(result["status"], "changed")
         self.assertEqual(result["step"], "autofix")
-        self.assertEqual(self._argv(capture), ["check", "--fix", str(target)])
+        # --force-exclude or ruff rewrites files the project excluded, because
+        # a path on the command line otherwise defeats exclude/extend-exclude.
+        self.assertEqual(
+            self._argv(capture), ["check", "--fix", "--force-exclude", str(target)]
+        )
 
     def test_biome_is_preferred_over_eslint(self) -> None:
         capture = self.home / "argv.txt"
@@ -132,7 +136,7 @@ class AutofixTests(FormatterTestCase):
 
 
 class FormatterResolutionTests(FormatterTestCase):
-    def test_unconfigured_python_defaults_to_ruff_format(self) -> None:
+    def test_unconfigured_python_defaults_to_ruff_format_honouring_exclude(self) -> None:
         capture = self.home / "argv.txt"
         self._plant_tool("ruff", capture=capture)
         target = self._plant_target("app.py")
@@ -142,7 +146,7 @@ class FormatterResolutionTests(FormatterTestCase):
         self.assertEqual(result["tool"], "ruff")
         self.assertEqual(result["status"], "changed")
         self.assertEqual(result["step"], "format")
-        self.assertEqual(self._argv(capture), ["format", str(target)])
+        self.assertEqual(self._argv(capture), ["format", "--force-exclude", str(target)])
 
     def test_pyproject_black_section_selects_black(self) -> None:
         (self.project / "pyproject.toml").write_text(
