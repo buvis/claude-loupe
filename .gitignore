@@ -15,5 +15,8 @@ htmlcov/
 .claude/
 .local/
 
+# Working documents (PRDs, autopilot state, scratch) - never committed
+dev/local/
+
 # MCP tool caches
 .serena/
