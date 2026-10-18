@@ -71,13 +71,18 @@ def _analyze(file_path: str, cwd: str) -> int:
     findings.extend(linted)
     blocking, advisory = classify(findings)
 
-    fix_now = bool(config.get("immediate_fix")) and not blocking
+    unattended = gate.unattended()
+    fix_now = bool(config.get("immediate_fix")) and not blocking and not unattended
     runtime = dict(state["runtime"])
     runtime["findings"] = [
         *runtime["findings"],
         *(asdict(finding) for finding in findings),
     ]
-    if not fix_now and file_path not in runtime["format_queue"]:
+    if (
+        not fix_now
+        and not unattended
+        and file_path not in runtime["format_queue"]
+    ):
         runtime["format_queue"] = [*runtime["format_queue"], file_path]
     save_state(project, {**state, "runtime": runtime})
 

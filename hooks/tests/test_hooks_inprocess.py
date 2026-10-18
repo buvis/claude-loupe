@@ -279,8 +279,9 @@ class AnalyzeTests(InProcessTestCase):
         self.plant_executable(
             "ruff",
             "import sys\n"
-            "with open(sys.argv[-1], 'a') as fh:\n"
-            "    fh.write('# fixed\\n')\n",
+            "if 'fix' in sys.argv or 'format' in sys.argv:\n"
+            "    with open(sys.argv[-1], 'a') as fh:\n"
+            "        fh.write('# fixed\\n')\n",
         )
         before = target.read_text(encoding="utf-8")
         with mock.patch.dict(os.environ, {"CLAUDE_UNATTENDED": "1"}):
