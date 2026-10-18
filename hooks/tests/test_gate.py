@@ -178,7 +178,7 @@ class ImportLightContractTests(unittest.TestCase):
                         self.assertNotEqual(module, "loupe")
 
     def test_gate_imports_only_the_stdlib(self) -> None:
-        allowed = {"json", "sys", "pathlib"}
+        allowed = {"json", "os", "sys", "pathlib"}
         tree = ast.parse((HOOKS_DIR / "gate.py").read_text(encoding="utf-8"))
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):

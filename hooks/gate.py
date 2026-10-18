@@ -19,6 +19,7 @@ silently.
 """
 
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -58,6 +59,11 @@ def loupe_enabled(cwd) -> bool:
         if "enabled" in layer:
             value = layer["enabled"]
     return value if isinstance(value, bool) else True
+
+
+def unattended() -> bool:
+    """True only when CLAUDE_UNATTENDED is set to the exact value "1"."""
+    return os.environ.get("CLAUDE_UNATTENDED") == "1"
 
 
 def _read_json_dict(path: Path) -> dict:
