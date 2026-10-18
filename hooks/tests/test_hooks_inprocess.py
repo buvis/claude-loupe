@@ -261,6 +261,38 @@ class AnalyzeTests(InProcessTestCase):
         self.assertEqual(state["runtime"]["format_queue"], [str(target)])
         self.assertEqual(len(state["runtime"]["findings"]), 1)
 
+    def test_unattended_analyze_reports_but_never_fixes(self) -> None:
+        override = self.project / ".claude" / "loupe.json"
+        override.parent.mkdir(parents=True)
+        override.write_text('{"immediate_fix": true}', encoding="utf-8")
+        target = self._target("app.py", "x = 1\n")
+        self.plant_astgrep(
+            [
+                {
+                    "ruleId": "style-python-demo",
+                    "severity": "warning",
+                    "message": "demo advisory",
+                    "range": {"start": {"line": 0, "column": 0}},
+                }
+            ]
+        )
+        self.plant_executable(
+            "ruff",
+            "import sys\n"
+            "with open(sys.argv[-1], 'a') as fh:\n"
+            "    fh.write('# fixed\\n')\n",
+        )
+        before = target.read_text(encoding="utf-8")
+        with mock.patch.dict(os.environ, {"CLAUDE_UNATTENDED": "1"}):
+            code, out, err = self.call(analyze, self.write_payload(target))
+        self.assertEqual(code, 0)
+        self.assertIn("style-python-demo", out)
+        self.assertEqual(err, "")
+        self.assertEqual(target.read_text(encoding="utf-8"), before)
+        state = self.load_state()
+        self.assertEqual(len(state["runtime"]["findings"]), 1)
+        self.assertEqual(state["runtime"]["format_queue"], [])
+
     def test_blocking_finding_exits_two_with_detail(self) -> None:
         target = self._target("app.py", "def f():\n    pass\n")
         self.plant_astgrep(
