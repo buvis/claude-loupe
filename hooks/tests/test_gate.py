@@ -142,6 +142,26 @@ class EnabledParityTests(HomeIsolatedTestCase):
         self.assertFalse(gate.loupe_enabled(nested))
 
 
+class UnattendedTests(unittest.TestCase):
+    """gate.unattended() reads only the exact value "1"."""
+
+    def _unattended(self, value):
+        if value is None:
+            env = os.environ.copy()
+            env.pop("CLAUDE_UNATTENDED", None)
+            with mock.patch.dict(os.environ, env, clear=True):
+                return gate.unattended()
+        with mock.patch.dict(os.environ, {"CLAUDE_UNATTENDED": value}):
+            return gate.unattended()
+
+    def test_unattended_reads_only_the_exact_value(self) -> None:
+        self.assertTrue(self._unattended("1"))
+        self.assertFalse(self._unattended("0"))
+        self.assertFalse(self._unattended("true"))
+        self.assertFalse(self._unattended(""))
+        self.assertFalse(self._unattended(None))
+
+
 class ImportLightContractTests(unittest.TestCase):
     """No engine import may run before the gate's enabled check."""
 
