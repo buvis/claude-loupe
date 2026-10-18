@@ -65,12 +65,15 @@ class EntryPointHarness(unittest.TestCase):
         (self.project / ".git").mkdir(parents=True)
         self.extra_path_dirs: list = []
 
-    def run_hook(self, script: str, payload=None, stdin_text=None):
+    def run_hook(self, script: str, payload=None, stdin_text=None, extra_env=None):
         path_dirs = [str(self.bin_dir), *map(str, self.extra_path_dirs)]
+        env = {"HOME": str(self.home), "PATH": os.pathsep.join(path_dirs)}
+        if extra_env:
+            env.update(extra_env)
         return subprocess.run(
             [sys.executable, str(HOOKS_DIR / script)],
             input=json.dumps(payload) if stdin_text is None else stdin_text,
-            env={"HOME": str(self.home), "PATH": os.pathsep.join(path_dirs)},
+            env=env,
             capture_output=True,
             text=True,
             timeout=60,
@@ -237,6 +240,39 @@ class StopOnceRowTests(EntryPointHarness):
         self.assertEqual(second.returncode, 0)
         self.assertEqual(second.stdout, "")
         self.assertEqual(target.read_text(encoding="utf-8"), settled)
+
+
+class UnattendedStopRowTests(EntryPointHarness):
+    def test_unattended_stop_skips_fix_and_format(self) -> None:
+        target = self.project / "app.py"
+        target.write_text("x = 1\n", encoding="utf-8")
+        self.plant_astgrep("[]")
+        analyzed = self.run_hook("analyze.py", self.write_payload(target))
+        self.assertEqual(analyzed.returncode, 0)
+        before = target.read_text(encoding="utf-8")
+
+        self.plant_executable(
+            "ruff",
+            "import sys\n"
+            "with open(sys.argv[-1], 'a') as fh:\n"
+            "    fh.write('# loupe-touched\\n')\n",
+        )
+
+        # A nudge pending too, so the summary still has something to print.
+        shell_target = self.project / "deploy.sh"
+        shell_target.write_text("echo hi\n", encoding="utf-8")
+        self.run_hook("analyze.py", self.write_payload(shell_target))
+
+        result = self.run_hook(
+            "agent_end.py", self.stop_payload(), extra_env={"CLAUDE_UNATTENDED": "1"}
+        )
+        self.assertEqual(result.returncode, 0)
+        self.assertIn("loupe stop summary", result.stdout)
+        self.assertNotIn("autofix", result.stdout)
+        self.assertNotIn("format ruff", result.stdout)
+        self.assertIn("shellcheck", result.stdout)
+        self.assertEqual(target.read_text(encoding="utf-8"), before)
+        self.assertEqual(self.read_state()["runtime"]["format_queue"], [])
 
 
 class NudgeOnceRowTests(EntryPointHarness):
