@@ -17,6 +17,7 @@ htmlcov/
 
 # Working documents (PRDs, autopilot state, scratch) - never committed
 dev/local/
+docs/dev/tmp/
 
 # MCP tool caches
 .serena/
