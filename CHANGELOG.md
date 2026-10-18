@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **loupe**: under `CLAUDE_UNATTENDED=1`, the Stop hook no longer autofixes,
+  formats, or runs slow linters, and the analyze hook no longer fixes inline
+  or queues files for Stop - both still report findings and nudges as usual,
+  so an unattended autopilot session no longer leaves uncommitted rewrites
+  between an implementor's commits.
+
 ## [0.2.2] - 2026-08-27
 
 ### Fixed

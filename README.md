@@ -57,6 +57,8 @@ State lives at `~/.claude/loupe/state/<project-hash>.json`. Config reads `~/.cla
 
 `ast-grep` is the one tool worth installing: without it the entire rule pack is inert and no stub or security finding ever fires. Every other tool is optional and skipped silently with one nudge per project.
 
+Setting `CLAUDE_UNATTENDED=1` in an agent session's environment disables every autofix, format, slow-lint, and inline-fix pass; findings, nudges, and the TDI line still print.
+
 ## Install
 
 ```
