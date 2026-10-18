@@ -85,7 +85,7 @@ def _finish_turn(cwd: str) -> None:
 
     config = load_config(project_root(cwd))
     sections = []
-    if queue:
+    if queue and not gate.unattended():
         sections.extend(_fix_and_format(queue, config))
         slow_lines, state = _slow_lint(queue, project, state, cwd)
         sections.extend(slow_lines)

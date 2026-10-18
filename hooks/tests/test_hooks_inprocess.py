@@ -41,6 +41,7 @@ class InProcessTestCase(unittest.TestCase):
         )
         env.start()
         self.addCleanup(env.stop)
+        os.environ.pop("CLAUDE_UNATTENDED", None)
         self.project = self.home / "proj"
         (self.project / ".git").mkdir(parents=True)
 
