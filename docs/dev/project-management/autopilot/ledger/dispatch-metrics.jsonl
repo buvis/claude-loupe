@@ -1,3 +1,10 @@
 {"kind":"handoff","site":"build","edge":"resume","at":1792357806,"phase":"build","prd":"00001-honor-unattended-sessions-v1.md"}
 {"kind":"handoff","site":"build","edge":"leave","at":1792358503,"phase":"review","prd":"00001-honor-unattended-sessions-v1.md"}
 {"kind":"handoff","site":"review","edge":"resume","at":1792358528,"phase":"review","prd":"00001-honor-unattended-sessions-v1.md"}
+{"id":"626ae90b","kind":"bob","task":"review-c1-20261018","queued_at":1792358642,"prompt_bytes":9540}
+{"id":"b3f3b33a","kind":"carl","task":"review-c1-20261018","queued_at":1792358642,"prompt_bytes":6551}
+{"id":"626ae90b","ended_at":1792358759,"elapsed_s":117,"outcome":"ok","detail":null}
+{"id":"b3f3b33a","ended_at":1792359233,"elapsed_s":591,"outcome":"ok","detail":null}
+{"id":"626ae90b","ended_at":1792359376,"elapsed_s":734,"outcome":"ok","detail":null}
+{"id":"b3f3b33a","ended_at":1792359376,"elapsed_s":734,"outcome":"ok","detail":null}
+{"kind":"handoff","site":"review","edge":"leave","at":1792359435,"phase":"review","prd":"00001-honor-unattended-sessions-v1.md"}
