@@ -49,9 +49,7 @@ def _finish_turn(cwd: str) -> None:
 
     project = project_hash(cwd)
     state = load_state(project)
-    queue = [
-        path for path in state["runtime"]["format_queue"] if isinstance(path, str)
-    ]
+    queue = [path for path in state["runtime"]["format_queue"] if isinstance(path, str)]
     pending_nudges = [
         tool
         for tool in state["persistent"]["nudged"]
@@ -77,7 +75,8 @@ def _finish_turn(cwd: str) -> None:
                 *pending_nudges,
             ],
             "tdi_history": update_tdi(
-                state["persistent"]["tdi_history"], findings
+                state["persistent"]["tdi_history"],
+                findings,
             ),
         },
     }
@@ -101,7 +100,7 @@ def _finish_turn(cwd: str) -> None:
         sections.append(
             f"TDI: {summary['latest']} finding(s) this turn "
             f"({summary['direction']} vs previous turn; "
-            f"{summary['lifetime']} lifetime over {summary['entries']} turn(s))"
+            f"{summary['lifetime']} lifetime over {summary['entries']} turn(s))",
         )
     if sections:
         print("loupe stop summary:")

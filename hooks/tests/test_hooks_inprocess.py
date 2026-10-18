@@ -37,7 +37,8 @@ class InProcessTestCase(unittest.TestCase):
         self.bin_dir = self.home / "bin"
         self.bin_dir.mkdir()
         env = mock.patch.dict(
-            os.environ, {"HOME": str(self.home), "PATH": str(self.bin_dir)}
+            os.environ,
+            {"HOME": str(self.home), "PATH": str(self.bin_dir)},
         )
         env.start()
         self.addCleanup(env.stop)
@@ -63,7 +64,8 @@ class InProcessTestCase(unittest.TestCase):
     def plant_astgrep(self, matches) -> None:
         payload = json.dumps(matches)
         self.plant_executable(
-            "ast-grep", f"import sys\nsys.stdout.write({payload!r})\n"
+            "ast-grep",
+            f"import sys\nsys.stdout.write({payload!r})\n",
         )
 
     def seed_state(self, runtime=None, persistent=None) -> None:
@@ -98,7 +100,8 @@ class SessionStartTests(InProcessTestCase):
     def test_startup_resets_runtime_and_prints_nothing(self) -> None:
         self.seed_state(runtime={"format_queue": ["stale.py"]})
         code, out, err = self.call(
-            session_start, {"cwd": str(self.project), "source": "startup"}
+            session_start,
+            {"cwd": str(self.project), "source": "startup"},
         )
         self.assertEqual((code, out, err), (0, "", ""))
         self.assertEqual(self.load_state()["runtime"]["format_queue"], [])
@@ -106,7 +109,8 @@ class SessionStartTests(InProcessTestCase):
     def test_resume_resets_runtime(self) -> None:
         self.seed_state(runtime={"format_queue": ["stale.py"]})
         code, _, _ = self.call(
-            session_start, {"cwd": str(self.project), "source": "resume"}
+            session_start,
+            {"cwd": str(self.project), "source": "resume"},
         )
         self.assertEqual(code, 0)
         self.assertEqual(self.load_state()["runtime"]["format_queue"], [])
@@ -114,18 +118,21 @@ class SessionStartTests(InProcessTestCase):
     def test_compact_keeps_the_turns_queue(self) -> None:
         self.seed_state(runtime={"format_queue": ["inflight.py"]})
         code, _, _ = self.call(
-            session_start, {"cwd": str(self.project), "source": "compact"}
+            session_start,
+            {"cwd": str(self.project), "source": "compact"},
         )
         self.assertEqual(code, 0)
         self.assertEqual(
-            self.load_state()["runtime"]["format_queue"], ["inflight.py"]
+            self.load_state()["runtime"]["format_queue"],
+            ["inflight.py"],
         )
 
     def test_disabled_project_is_untouched(self) -> None:
         self.disable_project()
         self.seed_state(runtime={"format_queue": ["kept.py"]})
         code, _, _ = self.call(
-            session_start, {"cwd": str(self.project), "source": "startup"}
+            session_start,
+            {"cwd": str(self.project), "source": "startup"},
         )
         self.assertEqual(code, 0)
         self.assertEqual(self.load_state()["runtime"]["format_queue"], ["kept.py"])
@@ -133,7 +140,8 @@ class SessionStartTests(InProcessTestCase):
     def test_poisoned_engine_fails_open(self) -> None:
         with mock.patch("loupe.state.load_state", side_effect=RuntimeError):
             code, out, err = self.call(
-                session_start, {"cwd": str(self.project), "source": "startup"}
+                session_start,
+                {"cwd": str(self.project), "source": "startup"},
             )
         self.assertEqual((code, out, err), (0, "", ""))
 
@@ -184,7 +192,8 @@ class ScanSecretsTests(InProcessTestCase):
 
     def test_poisoned_engine_fails_open(self) -> None:
         with mock.patch(
-            "loupe.secrets.scan_for_secrets", side_effect=RuntimeError
+            "loupe.secrets.scan_for_secrets",
+            side_effect=RuntimeError,
         ):
             code, out, err = self.call(
                 scan_secrets,
@@ -211,7 +220,7 @@ class AnalyzeTests(InProcessTestCase):
         code, out, _ = self.call(analyze, self.write_payload(target))
         self.assertEqual((code, out), (0, ""))
         self.assertFalse(
-            (self.home / ".claude" / "loupe" / "state").exists()
+            (self.home / ".claude" / "loupe" / "state").exists(),
         )
 
     def test_markdown_queues_silently_with_no_findings(self) -> None:
@@ -220,7 +229,8 @@ class AnalyzeTests(InProcessTestCase):
         code, out, _ = self.call(analyze, self.write_payload(target))
         self.assertEqual((code, out), (0, ""))
         self.assertEqual(
-            self.load_state()["runtime"]["format_queue"], [str(target)]
+            self.load_state()["runtime"]["format_queue"],
+            [str(target)],
         )
 
     def test_markdown_only_queue_stays_silent_at_stop(self) -> None:
@@ -250,8 +260,8 @@ class AnalyzeTests(InProcessTestCase):
                     "severity": "warning",
                     "message": "demo advisory",
                     "range": {"start": {"line": 0, "column": 0}},
-                }
-            ]
+                },
+            ],
         )
         code, out, err = self.call(analyze, self.write_payload(target))
         self.assertEqual(code, 0)
@@ -273,8 +283,8 @@ class AnalyzeTests(InProcessTestCase):
                     "severity": "warning",
                     "message": "demo advisory",
                     "range": {"start": {"line": 0, "column": 0}},
-                }
-            ]
+                },
+            ],
         )
         self.plant_executable(
             "ruff",
@@ -303,8 +313,8 @@ class AnalyzeTests(InProcessTestCase):
                     "severity": "error",
                     "message": "stub body",
                     "range": {"start": {"line": 0, "column": 0}},
-                }
-            ]
+                },
+            ],
         )
         code, _, err = self.call(analyze, self.write_payload(target))
         self.assertEqual(code, 2)
@@ -336,7 +346,8 @@ class AnalyzeTests(InProcessTestCase):
         self.call(analyze, self.write_payload(target))
         self.call(analyze, self.write_payload(target))
         self.assertEqual(
-            self.load_state()["runtime"]["format_queue"], [str(target)]
+            self.load_state()["runtime"]["format_queue"],
+            [str(target)],
         )
 
     def test_poisoned_engine_fails_open(self) -> None:
@@ -374,7 +385,7 @@ class AgentEndTests(InProcessTestCase):
             "sys.stdout.write('warning: unused variable x\\n')\n",
         )
         self.seed_state(
-            runtime={"format_queue": [str(first_rs), str(second_rs)]}
+            runtime={"format_queue": [str(first_rs), str(second_rs)]},
         )
         code, out, _ = self.call(agent_end, self.stop_payload())
         self.assertEqual(code, 0)

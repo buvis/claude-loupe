@@ -80,7 +80,8 @@ class ProjectRootParityTests(HomeIsolatedTestCase):
         nested = self.project / "src" / "deep"
         nested.mkdir(parents=True)
         self.assertEqual(
-            gate.find_project_root(nested), project_mod.project_root(nested)
+            gate.find_project_root(nested),
+            project_mod.project_root(nested),
         )
         self.assertEqual(gate.find_project_root(nested), self.project.resolve())
 
@@ -88,7 +89,8 @@ class ProjectRootParityTests(HomeIsolatedTestCase):
         loose = self.home / "loose"
         loose.mkdir()
         self.assertEqual(
-            gate.find_project_root(loose), project_mod.project_root(loose)
+            gate.find_project_root(loose),
+            project_mod.project_root(loose),
         )
 
 

@@ -78,11 +78,7 @@ def _analyze(file_path: str, cwd: str) -> int:
         *runtime["findings"],
         *(asdict(finding) for finding in findings),
     ]
-    if (
-        not fix_now
-        and not unattended
-        and file_path not in runtime["format_queue"]
-    ):
+    if not fix_now and not unattended and file_path not in runtime["format_queue"]:
         runtime["format_queue"] = [*runtime["format_queue"], file_path]
     save_state(project, {**state, "runtime": runtime})
 

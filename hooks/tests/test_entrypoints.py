@@ -47,8 +47,8 @@ def canned_matches(rule_id: str, severity: str = "error") -> str:
                 "severity": severity,
                 "message": "canned rule-pack match",
                 "range": {"start": {"line": 0, "column": 0}},
-            }
-        ]
+            },
+        ],
     )
 
 
@@ -87,7 +87,8 @@ class EntryPointHarness(unittest.TestCase):
 
     def plant_astgrep(self, payload: str = "[]") -> None:
         self.plant_executable(
-            "ast-grep", f"import sys\nsys.stdout.write({payload!r})\n"
+            "ast-grep",
+            f"import sys\nsys.stdout.write({payload!r})\n",
         )
 
     def write_payload(self, file_path: Path, content=None) -> dict:
@@ -190,8 +191,7 @@ class BlockingRowTests(EntryPointHarness):
     def test_blocking_findings_still_land_in_session_state(self) -> None:
         self.analyze_fixture(STUB_RULE, "sync.py")
         categories = [
-            finding["category"]
-            for finding in self.read_state()["runtime"]["findings"]
+            finding["category"] for finding in self.read_state()["runtime"]["findings"]
         ]
         self.assertIn("stub", categories)
 
@@ -199,7 +199,9 @@ class BlockingRowTests(EntryPointHarness):
 class AdvisoryRowTests(EntryPointHarness):
     def test_advisory_finding_prints_inline_and_passes(self) -> None:
         result, target = self.analyze_fixture(
-            ADVISORY_RULE, "widgets.py", severity="warning"
+            ADVISORY_RULE,
+            "widgets.py",
+            severity="warning",
         )
         self.assertEqual(result.returncode, 0)
         self.assertIn(ADVISORY_RULE, result.stdout)
@@ -208,7 +210,9 @@ class AdvisoryRowTests(EntryPointHarness):
 
     def test_advisory_file_is_queued_for_stop(self) -> None:
         _, target = self.analyze_fixture(
-            ADVISORY_RULE, "widgets.py", severity="warning"
+            ADVISORY_RULE,
+            "widgets.py",
+            severity="warning",
         )
         self.assertIn(str(target), self.read_state()["runtime"]["format_queue"])
 
@@ -264,7 +268,9 @@ class UnattendedStopRowTests(EntryPointHarness):
         self.run_hook("analyze.py", self.write_payload(shell_target))
 
         result = self.run_hook(
-            "agent_end.py", self.stop_payload(), extra_env={"CLAUDE_UNATTENDED": "1"}
+            "agent_end.py",
+            self.stop_payload(),
+            extra_env={"CLAUDE_UNATTENDED": "1"},
         )
         self.assertEqual(result.returncode, 0)
         self.assertIn("loupe stop summary", result.stdout)
@@ -356,7 +362,8 @@ class MalformedInputRowTests(EntryPointHarness):
 
     def test_unknown_fields_exit_zero(self) -> None:
         result = self.run_hook(
-            "scan_secrets.py", {"tool_name": "Bash", "tool_input": {"command": "ls"}}
+            "scan_secrets.py",
+            {"tool_name": "Bash", "tool_input": {"command": "ls"}},
         )
         self.assertEqual(result.returncode, 0)
         result = self.run_hook("analyze.py", {"tool_name": "Write", "tool_input": {}})
@@ -385,7 +392,8 @@ class FailOpenRowTests(EntryPointHarness):
     def test_session_start_fails_open_when_state_cannot_persist(self) -> None:
         self._poison_state_dir()
         result = self.run_hook(
-            "session_start.py", {"cwd": str(self.project), "source": "startup"}
+            "session_start.py",
+            {"cwd": str(self.project), "source": "startup"},
         )
         self.assertEqual(result.returncode, 0)
         self.assertNotIn("Traceback", result.stderr)
