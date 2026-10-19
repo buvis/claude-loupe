@@ -1,0 +1,26 @@
+The write-scope fence armed for unattended runs blocks writes outside the repo, so the memory notes were not saved. I will not work around the fence. The agoge run itself is complete.
+
+**Agoge run on claude-loupe is done. 19 verified findings await a human walkthrough.**
+
+Report and sidecar are at `dev/local/audit-results/agoge-2026-10-19.md` and `.json` in the target repo. The report ends with the `AGOGE-WALKTHROUGH-PENDING` line. No PRDs were emitted, since the run was unattended.
+
+**What ran**
+- Recon wrote a fresh profile at `dev/local/meta/agoge-profile.md`. Five lanes were armed and ran concurrently: walter, heidi, wendy, peggy, trudy. Judy was unarmed because the plugin has no browser or interactive surface.
+- Trudy was authorized by the invocation route with source `autoclaude-drain`, since the profile line reads `not asserted`.
+- Every lane reported `verified`. All 25 raw findings quoted a command and its output, so none were downgraded. Dedup across lanes merged six pairs into 19 findings: 2 HIGH, 9 MEDIUM, 8 LOW.
+
+**The two HIGH findings**
+- The secret scanner's regex prefix is quadratic on a single long token. A 20 KB unbroken string stalls the pre-write hook for 11.7 s against a 10 s budget. Line-broken code stays linear, so minified bundles and data URIs are the exposure.
+- Without ast-grep installed, the missing-tool nudge is written and then overwritten in the same hook run. The user is never told, and the whole rule pack is silently inert.
+
+**Notable MEDIUMs**
+- The read guard allows any edit whose anchor is not whole-line aligned, in block mode too.
+- Autofix rewrites files outside the project. Editing a file in a sibling repo also overwrites that repo's loupe state.
+- State writes share one temp filename, so concurrent hooks tear the file. This repo's own TDI history vanished during the run while five lanes read files in parallel.
+
+**Skipped, and why**
+- Authoring regression tests: the tree carries uncommitted autopilot ledger files, and the skill skips authoring on a dirty tree.
+- Project memory notes: the unattended write-scope fence denied writes to `~/.claude/projects`.
+- Scratch left in `/tmp/agoge-run`, `/tmp/wendy`, `/tmp/peggy-loupe`, `/tmp/trudy-loupe`. Nothing was written inside the repo's tracked tree. The git status is the same four autopilot entries as at start.
+
+**Next step for a human**: run `/run-agoge --resume dev/local/audit-results/agoge-2026-10-19.md` interactively to walk the packets. Findings 2 and 4 share one fix, and 9 and 15 share another, so they can be accepted as clusters.

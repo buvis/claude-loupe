@@ -1,0 +1,125 @@
+{
+  "phase": "done",
+  "next_phase": "",
+  "schema_version": 1,
+  "batch": {
+    "id": "202610182310",
+    "mode": "autopilot",
+    "completed_prds": [
+      {
+        "filename": "00001-honor-unattended-sessions-v1.md",
+        "cycles": 1,
+        "autonomous_decisions": 4,
+        "escalated_decisions": 0,
+        "tasks_completed": 6,
+        "tasks_total": 6,
+        "lane": "full",
+        "lane_reason": "hook",
+        "lane_effective": "full",
+        "lane_escalated": null
+      }
+    ],
+    "plugin_versions": {
+      "aegis@buvis-plugins": "0.4.1",
+      "warden@buvis-plugins": "0.14.1"
+    },
+    "parks_consecutive": 0
+  },
+  "prd_budget_since": "2026-10-18T21:10:06Z",
+  "prd": "00001-honor-unattended-sessions-v1.md",
+  "catchup_mode": "skipped",
+  "design_mode": "skip",
+  "doubt_reviewer": "codex",
+  "consensus_engine": "legacy",
+  "session_model": "sonnet",
+  "rework_cap": 2,
+  "lane": "full",
+  "lane_reason": "hook",
+  "lane_effective": "full",
+  "tasks": [],
+  "tasks_total": 0,
+  "work_start_sha": "43410230e0c6eef53da4272c081136c66f5ce857",
+  "tasks_completed": 0,
+  "cycle": 1,
+  "contract_card": "step: review cycle 1 CONVERGED (no CRITICAL/HIGH; constraint gate exit 0); tail sweep queued as tasks 5 and 6; resume at Tail sweep step 3 | invariants: do NOT re-review and do NOT increment state.cycle - Phase 5 never reopens after convergence; invoke /autopilot:work in rework mode on rework_task_ids [5, 6] only, then go straight to the finalize hand-off (phase-done --outcome converged); review file docs/dev/project-management/reviews/00001-honor-unattended-sessions-v1-review-1.md and ledger ...-ledger.json are written and gated | next: phase-review.md Tail sweep step 3 -> step 4 finalize hand-off to the done gate",
+  "review_lenses": {
+    "consensus": "done",
+    "blind": "done",
+    "doubt": "done",
+    "ui": "done",
+    "fable": "lost"
+  },
+  "doubts_rubric_verdicts": [
+    {
+      "rule_id": "D1",
+      "verdict": "pass"
+    },
+    {
+      "rule_id": "D2",
+      "verdict": "pass"
+    },
+    {
+      "rule_id": "D3",
+      "verdict": "pass"
+    },
+    {
+      "rule_id": "D4",
+      "verdict": "pass"
+    },
+    {
+      "rule_id": "D5",
+      "verdict": "pass"
+    }
+  ],
+  "deferred_decisions": [
+    {
+      "cycle": 1,
+      "issue": "Pre-existing, not introduced: `_finish_turn` is 63 lines, over the 50-line guideline (64 at base, so the diff improved it by one). Flagging per the surface-pre-existing-smells rule, not as rework for this PRD",
+      "severity": "\u26aa",
+      "file": "hooks/agent_end.py:45",
+      "action": "deferred",
+      "reason": "deferred by review-close"
+    }
+  ],
+  "applied_review_batches": [
+    "/Users/bob/git/src/github.com/buvis/claude-loupe/docs/dev/project-management/reviews/00001-honor-unattended-sessions-v1-review-1.md::decision-gate",
+    "/Users/bob/git/src/github.com/buvis/claude-loupe/docs/dev/project-management/reviews/00001-honor-unattended-sessions-v1-review-1.md::tail-sweep"
+  ],
+  "rework_task_ids": [
+    "5",
+    "6"
+  ],
+  "autonomous_decisions": [
+    {
+      "cycle": 1,
+      "issue": "Module docstring still states every analyzed file is queued \"unless `immediate_fix` is on and nothing blocks\" - the new unattended exception is missing, so the hook's contract doc is now wrong",
+      "severity": "medium",
+      "action": "auto-fixed",
+      "reason": "fixed by review-close"
+    },
+    {
+      "cycle": 1,
+      "issue": "PRD acceptance criterion \"still prints ... the TDI line when there is something to report\" has no test: the unattended Stop test plants `ast-grep` returning `[]` and ruff is absent during the analyze calls, so `findings` is empty and the TDI branch never executes",
+      "severity": "medium",
+      "action": "auto-fixed",
+      "reason": "fixed by review-close"
+    },
+    {
+      "issue": "Cycle 1 converged with no CRITICAL/HIGH; 14 findings, 2 multi-voice mediums swept (R1 docstrings, R2 TDI-under-unattended test), 11 single-voice rows discarded to the ledger, 1 pre-existing low deferred",
+      "severity": "medium",
+      "cycle": 1,
+      "action": "tail sweep queued as tasks 5 and 6; handing off to a fresh session at the sweep tier",
+      "reason": "no unresolved CRITICAL/HIGH and the doubt-roster constraint gate certified, so the review-rework loop converged at cycle 1"
+    },
+    {
+      "issue": "Full pytest runs at repo root fail non-deterministically in hooks/tests/test_tools.py and hooks/tests/test_astgrep.py under machine load (ast-grep/mise timeouts)",
+      "severity": "low",
+      "cycle": 1,
+      "action": "recorded as a pre-existing flakiness note; not charged to this PRD and no task created",
+      "reason": "both files are outside this PRD's diff and the unittest gate ran green twice at HEAD (313 tests, OK)"
+    }
+  ],
+  "phases_completed": [
+    "review"
+  ]
+}
