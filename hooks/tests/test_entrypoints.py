@@ -280,6 +280,17 @@ class UnattendedStopRowTests(EntryPointHarness):
         self.assertEqual(target.read_text(encoding="utf-8"), before)
         self.assertEqual(self.read_state()["runtime"]["format_queue"], [])
 
+    def test_unattended_stop_still_prints_tdi_line_when_findings_exist(self) -> None:
+        self.analyze_fixture(ADVISORY_RULE, "app.py")
+
+        result = self.run_hook(
+            "agent_end.py",
+            self.stop_payload(),
+            extra_env={"CLAUDE_UNATTENDED": "1"},
+        )
+        self.assertEqual(result.returncode, 0)
+        self.assertIn("TDI:", result.stdout)
+
 
 class NudgeOnceRowTests(EntryPointHarness):
     def test_missing_tool_nudge_fires_exactly_once_per_project(self) -> None:
