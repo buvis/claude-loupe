@@ -8,3 +8,8 @@
 {"id":"626ae90b","ended_at":1792359376,"elapsed_s":734,"outcome":"ok","detail":null}
 {"id":"b3f3b33a","ended_at":1792359376,"elapsed_s":734,"outcome":"ok","detail":null}
 {"kind":"handoff","site":"review","edge":"leave","at":1792359435,"phase":"review","prd":"00001-honor-unattended-sessions-v1.md"}
+{"id":"5b7b8c74","kind":"pat","task":"5","queued_at":1792372425,"prompt_bytes":4936}
+{"id":"4abf7206","kind":"pat","task":"6","queued_at":1792372572,"prompt_bytes":5087}
+{"id":"5b7b8c74","ended_at":1792372678,"elapsed_s":null,"outcome":"ok","detail":"closed-by: artifact"}
+{"id":"4abf7206","ended_at":1792372678,"elapsed_s":null,"outcome":"ok","detail":"closed-by: artifact"}
+{"kind":"handoff","site":"review","edge":"leave","at":1792372678,"phase":"done","prd":"00001-honor-unattended-sessions-v1.md"}
