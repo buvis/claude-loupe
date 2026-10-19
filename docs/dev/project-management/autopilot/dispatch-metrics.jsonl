@@ -13,3 +13,5 @@
 {"id":"5b7b8c74","ended_at":1792372678,"elapsed_s":null,"outcome":"ok","detail":"closed-by: artifact"}
 {"id":"4abf7206","ended_at":1792372678,"elapsed_s":null,"outcome":"ok","detail":"closed-by: artifact"}
 {"kind":"handoff","site":"review","edge":"leave","at":1792372678,"phase":"done","prd":"00001-honor-unattended-sessions-v1.md"}
+{"kind":"handoff","site":"done","edge":"resume","at":1792372705,"phase":"done","prd":"00001-honor-unattended-sessions-v1.md"}
+{"kind":"handoff","site":"done","edge":"leave","at":1792372787,"phase":"done","prd":"00001-honor-unattended-sessions-v1.md"}
