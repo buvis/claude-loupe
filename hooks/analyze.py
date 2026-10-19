@@ -10,8 +10,10 @@ must-fix feedback, so the message asks for a fix rather than
 claiming a block. Advisory findings print inline and exit 0. Every analyzed
 file is queued for the Stop-time autofix/format pass - unless
 ``immediate_fix`` is on and nothing blocks, in which case the fix and
-format run inline instead. Session findings accumulate in runtime
-state for ``/loupe-report``.
+format run inline instead, or the session is unattended
+(``CLAUDE_UNATTENDED``), in which case the file is queued for neither
+and no fix runs. Session findings accumulate in runtime state for
+``/loupe-report``.
 
 Parsing is defensive (unknown or missing fields exit 0) and the whole
 hook fails open (exit 0) on internal errors.
