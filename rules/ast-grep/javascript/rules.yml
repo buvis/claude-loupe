@@ -46,14 +46,26 @@ severity: error
 message: child_process exec with a dynamic command string enables shell injection
 rule:
   any:
-    - pattern: exec($CMD)
-    - pattern: exec($CMD, $$$REST)
-    - pattern: execSync($CMD)
-    - pattern: execSync($CMD, $$$REST)
     - pattern: child_process.exec($CMD)
     - pattern: child_process.exec($CMD, $$$REST)
     - pattern: child_process.execSync($CMD)
     - pattern: child_process.execSync($CMD, $$$REST)
+    # A bare exec is Node's only in a file that names the module (import,
+    # require or dynamic import). Other runtimes export an argv-style
+    # exec(program, args) that starts no shell.
+    - all:
+        - any:
+            - pattern: exec($CMD)
+            - pattern: exec($CMD, $$$REST)
+            - pattern: execSync($CMD)
+            - pattern: execSync($CMD, $$$REST)
+        - inside:
+            kind: program
+            stopBy: end
+            has:
+              kind: string
+              regex: ^["'](node:)?child_process["']$
+              stopBy: end
 constraints:
   CMD:
     not:

@@ -128,13 +128,21 @@ class RulePackBehaviorTests(unittest.TestCase):
                 )
                 self.assertIn(rule_id, fired)
 
+    def _negative_fixtures(self, rule_id: str, dir_name: str) -> list[Path]:
+        """``negative.<ext>`` plus any ``negative-<case>.<ext>``.
+
+        One extra file per false-positive class that needs a whole file
+        of its own (for example, a file that never imports the module).
+        """
+        pattern = f"negative*{RULE_DIRS[dir_name]}"
+        return sorted(path.resolve() for path in (FIXTURES_DIR / rule_id).glob(pattern))
+
     def test_every_rule_stays_silent_on_its_negative_fixture(self) -> None:
         for rule_id, dir_name in _rule_ids().items():
-            with self.subTest(rule=rule_id):
-                fired = self.matches_by_file.get(
-                    self._fixture(rule_id, dir_name, "negative"), set()
-                )
-                self.assertNotIn(rule_id, fired)
+            for fixture in self._negative_fixtures(rule_id, dir_name):
+                with self.subTest(rule=rule_id, fixture=fixture.name):
+                    fired = self.matches_by_file.get(fixture, set())
+                    self.assertNotIn(rule_id, fired)
 
     def test_empty_except_and_catch_never_block_an_edit(self) -> None:
         """Best-effort cleanup is advisory, not a stub.

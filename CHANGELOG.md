@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **loupe**: a bare `exec(...)` or `execSync(...)` in JavaScript and TypeScript is reported as shell injection only in a file that imports or requires `child_process`, so another runtime's argv-style `exec(program, args)` (Herdr mods, for example) no longer blocks every edit as a security finding.
+
 ## [0.3.0] - 2026-10-19
 
 ### Changed
